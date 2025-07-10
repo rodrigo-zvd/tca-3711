@@ -65,7 +65,7 @@ pipeline {
     //     }
     //   }
     //   steps {
-    //     dir('terraform') {
+    //     dir('cvsl/terraform') {
     //       withCredentials([
     //         sshUserPrivateKey(credentialsId: 'jenkins-priv-key', keyFileVariable: 'JENKINS_PRIV_KEY'),
     //         ]) {
@@ -123,7 +123,7 @@ pipeline {
           MINIO_SECRET_KEY = credentials('minio_secret_key')
         }
         steps {
-          dir('terraform') {
+          dir('cvsl/terraform') {
             sh '''
             /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
             '''
@@ -140,7 +140,7 @@ pipeline {
         }
       }
       steps {
-        dir('terraform'){
+        dir('cvsl/terraform'){
         sh '''
           #terraform init -no-color -migrate-state -backend-config=backend.hcl
           terraform init -no-color
@@ -157,7 +157,7 @@ pipeline {
         }
       }
       steps {
-        dir('terraform'){
+        dir('cvsl/terraform'){
               sh '''
                 terraform plan -no-color
               '''
@@ -178,7 +178,7 @@ pipeline {
         }
       }
       steps {
-        dir('terraform'){
+        dir('cvsl/terraform'){
         sh '''
           terraform apply -no-color -auto-approve
         '''
@@ -199,7 +199,7 @@ pipeline {
     //     }
     //   }
     //   steps {
-    //     dir('terraform') {
+    //     dir('cvsl/terraform') {
     //       sh '''
     //         export ANSIBLE_ROLES_PATH="$ANSIBLE_ROLES_PATH:/kubespray/roles"
     //         export ANSIBLE_HOST_KEY_CHECKING="False"
@@ -227,7 +227,7 @@ pipeline {
         }
       }
       steps {
-        dir('terraform') {
+        dir('cvsl/terraform') {
           sh '''
             terraform apply -destroy -no-color -auto-approve
           '''
