@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+    <installation mode="fresh">
+        <primary-disk>sda</primary-disk>
+        <keymap>br-abnt2</keymap>
+        <root-password>123456</root-password>
+        <source type="local">repo</source>
+        <admin-interface name="eth0" proto="static">
+          <ipaddr>192.168.1.49</ipaddr>
+          <subnet>255.255.255.0</subnet>
+          <gateway>192.168.1.5</gateway>
+        </admin-interface>
+        <name-server>8.8.8.8</name-server>
+        <hostname>xcp</hostname>
+        <timezone>America/Sao_Paulo</timezone>
+    </installation>

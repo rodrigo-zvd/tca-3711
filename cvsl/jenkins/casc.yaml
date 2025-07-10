@@ -1,0 +1,86 @@
+jenkins:
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+       - id: ${JENKINS_ADMIN_USER}
+         password: ${JENKINS_ADMIN_PASSWORD}
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "USER:Overall/Administer:admin"
+        - "GROUP:Overall/Read:authenticated"
+  remotingSecurity:
+    enabled: true
+security:
+  queueItemAuthenticator:
+    authenticators:
+    - global:
+        strategy: triggeringUsersAuthorizationStrategy
+unclassified:
+  location:
+    url: http://localhost:8080/
+appearance:
+  themeManager:
+    disableUserThemes: true
+    theme: "dark"
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - string:
+              scope: GLOBAL
+              id: "xoa_url"
+              secret: "${XOA_URL}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "xoa_user"
+              secret: "${XOA_USER}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "xoa_password"
+              secret: "${XOA_PASSWORD}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "minio_endpoint"
+              secret: "${MINIO_ENDPOINT}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "minio_access_key"
+              secret: "${MINIO_ACCESS_KEY}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "minio_secret_key"
+              secret: "${MINIO_SECRET_KEY}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
+              id: "jenkins-pub-key"
+              secret: "${readFile:/certs/id_ed25519.pub}"
+              description: "SSH public key file."
+          - basicSSHUserPrivateKey:
+              scope: GLOBAL
+              id: "jenkins-priv-key"
+              username: ""
+              passphrase: ""
+              description: "SSH private key file"
+              privateKeySource:
+                directEntry:
+                  privateKey: "${readFile:/certs/id_ed25519}"
+jobs:
+  - script: >
+      pipelineJob('Teste') {
+        definition {
+            cps {
+                // O conteúdo do Jenkinsfile será lido do caminho especificado no container do Jenkins.
+                // Você precisará montar este arquivo no container.
+                script("""${readFile:/var/jenkins_home/jenkinsfiles/Jenkinsfile}""")
+                sandbox(true)
+            }
+        }
+      }

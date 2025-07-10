@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# Documentation:
+# https://docs.xcp-ng.org/installation/install-xcp-ng/#unattended-installation-with-a-custom-iso-image
+# https://docs.xcp-ng.org/project/development-process/ISO-modification/
+# https://docs.xcp-ng.org/appendix/answerfile/
+
+# ==============================================================================
+# Script to Create Customized XCP-ng Auto-Install ISOs
+# This script generates multiple ISOs, each pointing to a unique answerfile URL.
+# ==============================================================================
+
+# --- CONFIGURATION VARIABLES ---
+ISO_VERSION="8.3" # Adjust if your XCP-ng version is different
+ORIGINAL_ISO="../../isos/xcp-ng-8.3.0.iso" # Replace with your XCP-ng ISO filename (relative or full path)
+
+# Base URL for your answer files. Each ISO will point to <BASE_ANSWERFILE_URL>/answerfile-xcpX.xml
+BASE_ANSWERFILE_URL="http://192.168.1.110" # IMPORTANT: Replace with your actual web server IP/URL
+
+# --- DO NOT EDIT BELOW THIS LINE UNLESS YOU KNOW WHAT YOU ARE DOING ---
+
+# Get the count of templates from the first argument
+XCPNG_TEMPLATE_COUNT=${1:-1} # Defaults to 1 if no argument is provided
+
+# Validate the argument
+if ! [[ "$XCPNG_TEMPLATE_COUNT" =~ ^[0-9]+$ ]] || [ "$XCPNG_TEMPLATE_COUNT" -lt 1 ]; then
+    echo "Error: The number of templates (first argument) must be a positive integer (>= 1)." >&2
+    echo "Usage: $0 <number_of_templates>" >&2
+    exit 1
+fi
+
+# Ensure the output 'isos' directory exists
+mkdir -p isos || { echo "Error: Failed to create 'isos' output directory."; exit 1; }
+
+# Check if required commands are available
+for cmd in mount umount genisoimage sed cp mkdir rm isohybrid; do
+    if ! command -v "$cmd" &> /dev/null; then
+        echo "Error: Command '$cmd' not found. Please install it."
+        exit 1
+    fi
+done
+
+# Check if the original ISO exists
+if [ ! -f "$ORIGINAL_ISO" ]; then
+    echo "Error: Original ISO '$ORIGINAL_ISO' not found."
+    echo "Please make sure it's in the correct path."
+    exit 1
+fi
+
+echo "--- Starting XCP-ng Auto-Install ISO Generation for $XCPNG_TEMPLATE_COUNT instances ---"
+
+# Loop to create an ISO for each instance
+for (( i=1; i<=$XCPNG_TEMPLATE_COUNT; i++ )); do
+    echo ""
+    echo "Processing instance #$i..."
+
+    # Define dynamic variables for the current instance
+    CURRENT_ANSWERFILE_NAME="answerfile-xcp${i}.xml"
+    CURRENT_ANSWERFILE_URL="${BASE_ANSWERFILE_URL}/${CURRENT_ANSWERFILE_NAME}"
+    CURRENT_OUTPUT_ISO="isos/xcp-ng-${ISO_VERSION}-autoinstall-xcp${i}.iso"
+
+    echo "  - Answerfile URL for this ISO: $CURRENT_ANSWERFILE_URL"
+    echo "  - Output ISO name: $CURRENT_OUTPUT_ISO"
+
+    # Create temporary directories for this iteration
+    TMP_ISO_MOUNT=$(mktemp -d -t iso_mnt_XXXXXX)
+    TMP_WORK_DIR=$(mktemp -d -t iso_work_XXXXXX)
+
+    # Function to clean up temporary files for the current iteration
+    function iteration_cleanup {
+        echo "  - Cleaning up temporary files for instance #$i..."
+        if mountpoint -q "$TMP_ISO_MOUNT"; then
+            sudo umount "$TMP_ISO_MOUNT"
+        fi
+        rm -rf "$TMP_ISO_MOUNT"
+        rm -rf "$TMP_WORK_DIR"
+        echo "  - Cleanup complete for instance #$i."
+    }
+
+    # Register cleanup function to run on exit or script interruption for this iteration
+    # Note: Using trap within a loop can be tricky; ensuring unique temp dirs helps.
+    # The `cleanup` function at the end will also catch anything remaining.
+
+    echo "  - Mounting original ISO '$ORIGINAL_ISO' to '$TMP_ISO_MOUNT'..."
+    sudo mount -o loop "$ORIGINAL_ISO" "$TMP_ISO_MOUNT"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to mount ISO for instance #$i. Exiting."
+        iteration_cleanup
+        exit 1
+    fi
+
+    echo "  - Copying ISO contents to '$TMP_WORK_DIR'..."
+    # Copy everything including hidden files (like .disk)
+    cp -a "$TMP_ISO_MOUNT"/. "$TMP_WORK_DIR"/
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to copy ISO contents for instance #$i. Exiting."
+        iteration_cleanup
+        exit 1
+    fi
+
+    # Path to the isolinux.cfg file in the working directory
+    ISOLINUX_CFG="$TMP_WORK_DIR/boot/isolinux/isolinux.cfg"
+
+    if [ ! -f "$ISOLINUX_CFG" ]; then
+        echo "Error: isolinux.cfg not found at '$ISOLINUX_CFG' for instance #$i. Is this a valid XCP-ng ISO?"
+        iteration_cleanup
+        exit 1
+    fi
+
+    echo "  - Modifying '$ISOLINUX_CFG' to include answerfile URL: $CURRENT_ANSWERFILE_URL"
+
+    # Use sed to find the 'LABEL install' block and append the answerfile parameter
+    # IMPORTANT: The sed command uses a specific pattern to find the line where the answerfile URL should be inserted.
+    # This pattern relies on the exact structure of isolinux.cfg from XCP-ng ISOs.
+    sed -i "/^LABEL install/,/^APPEND / { s|\(---\s*\/boot\/vmlinuz.*\)\(---\s*\/install.img\)|\1 answerfile=${CURRENT_ANSWERFILE_URL} install \2| }" "$ISOLINUX_CFG"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to modify isolinux.cfg for instance #$i. Check the sed command or file content."
+        iteration_cleanup
+        exit 1
+    fi
+
+    echo "  - isolinux.cfg modified successfully. New content for 'install' label (first line):"
+    # Display the modified section for verification (only the relevant line)
+    sed -n "/^LABEL install/,/^APPEND /p" "$ISOLINUX_CFG" | grep "answerfile=" | head -n 1
+
+    echo "  - Creating new ISO image '$CURRENT_OUTPUT_ISO' with genisoimage..."
+
+    sudo genisoimage -o "$CURRENT_OUTPUT_ISO" -v -r -J --joliet-long -V "XCP-ng $ISO_VERSION" \
+                -c boot/isolinux/boot.cat -b boot/isolinux/isolinux.bin \
+                -no-emul-boot -boot-load-size 4 -boot-info-table \
+                -eltorito-alt-boot -e boot/efiboot.img -no-emul-boot "$TMP_WORK_DIR"
+                
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create initial ISO with genisoimage for instance #$i. Exiting."
+        iteration_cleanup
+        exit 1
+    fi
+
+    echo "  - Running isohybrid --uefi on the new ISO for full UEFI compatibility: $CURRENT_OUTPUT_ISO"
+    sudo isohybrid --uefi "$CURRENT_OUTPUT_ISO"
+
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to make ISO isohybrid for instance #$i. Exiting."
+        iteration_cleanup
+        exit 1
+    fi
+
+    echo "Successfully created bootable ISO: $CURRENT_OUTPUT_ISO (supports BIOS and UEFI)"
+
+    # Clean up temporary directories for the current iteration
+    iteration_cleanup
+
+done
+
+echo ""
+echo "--- All XCP-ng Auto-Install ISOs have been generated! ---"
+echo "You can find them in the 'isos/' directory."
+echo "Remember to place your 'answerfile-xcpX.xml' files on your web server ($BASE_ANSWERFILE_URL)."
+
+exit 0

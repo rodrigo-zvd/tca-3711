@@ -1,0 +1,150 @@
+services:
+  jenkins:
+    build:
+      context: jenkins/
+    restart: always
+    environment:
+      - JENKINS_ADMIN_USER=${JENKINS_ADMIN_USER}
+      - JENKINS_ADMIN_PASSWORD=${JENKINS_ADMIN_PASSWORD}
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - XCP_MASTER_IP=${XCP_MASTER_IP}
+      - XCP_USER=${XCP_USER}
+      - XCP_PASSWORD=${XCP_PASSWORD}
+      - XOA_URL=${XOA_URL}
+      - XOA_USER=${XOA_USER}
+      - XOA_PASSWORD=${XOA_PASSWORD}
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - SSH_PUBLIC_KEY=/certs/id_ed25519.pub
+      - SSH_PRIVATE_KEY=/certs/id_ed25519
+    networks:
+      - docker
+    ports:
+      - 8080:8080
+      - 50000:50000
+    tty: true
+    volumes:
+      - jenkins-data:/var/jenkins_home
+      - jenkins-docker-certs:/certs/client:ro
+      - ./jenkins/jenkinsfiles:/var/jenkins_home/jenkinsfiles:ro
+      - ${SSH_PUBLIC_KEY}:/certs/id_ed25519.pub:ro
+      - ${SSH_PRIVATE_KEY}:/certs/id_ed25519:ro
+
+  dind:
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    image: docker:dind
+    privileged: true
+    restart: always
+    networks:
+      docker:
+        aliases: 
+          - docker
+    ports:
+      - 2376:2376
+    tty: true
+    volumes:
+      - jenkins-docker-certs:/certs/client
+      - jenkins-data:/var/jenkins_home
+      - docker-cache:/var/lib/docker
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z 
+    restart: always
+    command:
+      - server
+      - /data
+      - --console-address
+      - ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    networks:
+      docker:
+        aliases:
+          - minio
+    volumes:
+      - minio_data:/data
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  mc_setup:
+    image: quay.io/minio/mc:RELEASE.2025-03-12T17-29-24Z
+    depends_on:
+      minio:
+        condition: service_healthy
+    networks:
+      docker: null
+    volumes:
+      - ./minio/mc_setup.sh:/mc_setup.sh:ro
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ROOT_USER}
+      - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+    entrypoint: ["/bin/sh", "/mc_setup.sh"]
+
+  xen-orchestra:
+    build:
+      context: xen-orchestra/
+    restart: unless-stopped
+    stop_grace_period: 1m
+    ports:
+        - "8081:80"
+    networks:
+      docker:
+        aliases: 
+          - xen-orchestra
+    environment:
+        - HTTP_PORT=80
+    cap_add:
+      - SYS_ADMIN
+      - DAC_READ_SEARCH
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - xo-data:/var/lib/xo-server
+      - redis-data:/var/lib/redis
+    logging: &default_logging
+        driver: "json-file"
+        options:
+            max-size: "1M"
+            max-file: "2"
+    healthcheck:
+      test: ["CMD", "sh", "-c", "/healthcheck.sh"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+  xo-cli:
+    build:
+      context: xen-orchestra/
+    depends_on:
+      xen-orchestra:
+        condition: service_healthy
+    networks:
+      docker: null
+    volumes:
+      - ./xen-orchestra/xo_setup.sh:/xo_setup.sh:ro
+    environment:
+      - XCP_MASTER_IP=${XCP_MASTER_IP}
+      - XCP_USER=${XCP_USER}
+      - XCP_PASSWORD=${XCP_PASSWORD}
+      - XOA_USER=${XOA_USER}
+      - XOA_PASSWORD=${XOA_PASSWORD}
+    entrypoint: ["/bin/bash", "/xo_setup.sh"]
+
+networks:
+  docker:
+
+volumes:
+  docker-cache:
+  jenkins-data:
+  jenkins-docker-certs:
+  minio_data:
+  xo-data:
+  redis-data:

@@ -1,0 +1,170 @@
+#!/bin/bash
+
+# This script automates several tasks on an XCP-ng host:
+# In 'create' mode:
+# 1. Creates a specified directory.
+# 2. Downloads a file (e.g., an ISO) into that directory.
+# 3. Creates an ISO Storage Repository (SR).
+# In 'destroy' mode:
+# 1. Removes the created ISO Storage Repository (SR).
+# 2. Removes the created directory.
+
+# =======================================================
+#                  Variable Declarations
+# =======================================================
+
+# XCP-ng Host IP address or hostname
+XCP_NG_HOST="192.168.1.10"
+# XCP-ng User (e.g., 'root')
+XCP_NG_USER="root"
+# XCP-ng Password (Be cautious with storing passwords directly in scripts!)
+# Consider using SSH keys for better security in production environments.
+XCP_NG_PASSWORD="m3gaFox50"
+# URL for the auto-install ISO or any file to download
+XCP_NG_AUTOINSTALL_URL="http://192.168.1.110/isos/xcp-ng-8.3.0-autoinstall.iso"
+# Name for the new ISO Storage Repository
+XCP_NG_SR_ISO_NAME="XCPngAutoInstall_ISOs"
+# Path on the XCP-ng host where the ISO will be stored and the SR will be created
+XCP_NG_SR_ISO_PATH="/var/run/sr-mount/xcp-iso-sr"
+
+# =======================================================
+#                      Functions
+# =======================================================
+
+# Function to execute a command on the remote XCP-ng host and capture its output
+execute_remote_command() {
+    local command="$1"
+    echo "Executing command on ${XCP_NG_HOST}: ${command}" >&2 # Redirect to stderr to not pollute stdout
+    local output
+    output=$(sshpass -p "${XCP_NG_PASSWORD}" ssh -o StrictHostKeyChecking=no "${XCP_NG_USER}@${XCP_NG_HOST}" "${command}" 2>&1)
+    local status=$?
+    if [ ${status} -ne 0 ]; then
+        echo "ERROR: Command failed on ${XCP_NG_HOST}. Output: ${output}" >&2
+        exit 1
+    fi
+    echo "${output}"
+}
+
+# Function to create resources (directory, download file, create SR)
+create_resources() {
+    echo "Starting XCP-ng automation script in 'create' mode..."
+
+    # Task 1: Create the directory specified by XCP_NG_SR_ISO_PATH on XCP_NG_HOST
+    echo "Task 1/3: Creating directory '${XCP_NG_SR_ISO_PATH}' on ${XCP_NG_HOST}..."
+    execute_remote_command "mkdir -p ${XCP_NG_SR_ISO_PATH}"
+    echo "Directory created successfully."
+
+    # Task 2: Download the XCP_NG_AUTOINSTALL_URL inside XCP_NG_SR_ISO_PATH on XCP_NG_HOST
+    echo "Task 2/3: Downloading '${XCP_NG_AUTOINSTALL_URL}' to '${XCP_NG_SR_ISO_PATH}' on ${XCP_NG_HOST}..."
+    FILENAME=$(basename "${XCP_NG_AUTOINSTALL_URL}")
+    execute_remote_command "wget -O ${XCP_NG_SR_ISO_PATH}/${FILENAME} ${XCP_NG_AUTOINSTALL_URL}"
+    echo "File downloaded successfully."
+
+    # Task 3: Check and create a Storage Repository (SR) on XCP_NG_HOST
+    echo "Task 3/3: Checking and creating Storage Repository '${XCP_NG_SR_ISO_NAME}' on ${XCP_NG_HOST}..."
+
+    SR_LIST_OUTPUT=$(execute_remote_command "xe sr-list name-label=\"${XCP_NG_SR_ISO_NAME}\" --minimal")
+
+    SR_UUID=""
+    if echo "${SR_LIST_OUTPUT}" | grep -q "uuid (RO)"; then
+        SR_UUID=$(echo "${SR_LIST_OUTPUT}" | grep "uuid (RO)" | awk '{print $NF}')
+    elif [ -n "${SR_LIST_OUTPUT}" ]; then
+        SR_UUID="${SR_LIST_OUTPUT}"
+    fi
+
+    if [ -n "${SR_UUID}" ]; then
+        echo "Storage Repository '${XCP_NG_SR_ISO_NAME}' (UUID: ${SR_UUID}) already exists."
+
+        SR_PARAM_OUTPUT=$(execute_remote_command "xe sr-param-list uuid=${SR_UUID}")
+        EXISTING_PATH=$(echo "${SR_PARAM_OUTPUT}" | grep "device-config (MRO)" | sed -n 's/.*location: \([^;]*\);.*/\1/p' | tr -d '[:space:]')
+
+        if [ -z "${EXISTING_PATH}" ]; then
+            echo "WARNING: Could not determine the path for the existing SR '${XCP_NG_SR_ISO_NAME}'. Please check manually."
+            exit 1
+        elif [ "${EXISTING_PATH}" = "${XCP_NG_SR_ISO_PATH}" ]; then
+            echo "Existing SR path matches the desired path: '${EXISTING_PATH}'."
+            echo "Skipping SR creation as it already exists and is correctly configured."
+        else
+            echo "WARNING: Existing SR path '${EXISTING_PATH}' does not match the desired path '${XCP_NG_SR_ISO_PATH}'."
+            echo "Please manually inspect or remove the existing SR if you wish to re-create it with the new path."
+            echo "To recreate, you would typically run: xe sr-forget uuid=${SR_UUID}"
+            exit 1
+        fi
+    else
+        echo "Storage Repository '${XCP_NG_SR_ISO_NAME}' does not exist. Creating it now..."
+        SR_COMMAND="xe sr-create name-label=\"${XCP_NG_SR_ISO_NAME}\" type=iso device-config:location=${XCP_NG_SR_ISO_PATH} device-config:legacy_mode=true content-type=iso"
+        execute_remote_command "${SR_COMMAND}"
+        echo "Storage Repository created successfully."
+    fi
+
+    echo "XCP-ng automation script in 'create' mode completed."
+}
+
+# Function to destroy resources (SR, directory)
+destroy_resources() {
+    echo "Starting XCP-ng automation script in 'destroy' mode..."
+
+    # Task 1: Remove the SR created by the 'create' mode
+    echo "Task 1/2: Removing Storage Repository '${XCP_NG_SR_ISO_NAME}' on ${XCP_NG_HOST}..."
+
+    # Get the UUID of the SR
+    SR_UUID=$(execute_remote_command "xe sr-list name-label=\"${XCP_NG_SR_ISO_NAME}\" --minimal" | tail -n 1)
+
+    if [ -n "${SR_UUID}" ]; then
+        echo "Found Storage Repository '${XCP_NG_SR_ISO_NAME}' with UUID: ${SR_UUID}."
+
+        # Find and unplug any PBDs connected to this SR
+        echo "Searching for PBDs connected to SR ${SR_UUID}..."
+        PBD_LIST_OUTPUT=$(execute_remote_command "xe pbd-list sr-uuid=${SR_UUID} --minimal")
+        PBD_UUIDS=$(echo "${PBD_LIST_OUTPUT}" | tr ' ' '\n' | grep -v '^$' | sort -u) # Handle multiple PBDs
+
+        if [ -n "${PBD_UUIDS}" ]; then
+            for PBD_UUID in ${PBD_UUIDS}; do
+                echo "Found PBD: ${PBD_UUID}. Attempting to unplug it..."
+                execute_remote_command "xe pbd-unplug uuid=${PBD_UUID}"
+                echo "PBD ${PBD_UUID} unplugged."
+            done
+        else
+            echo "No PBDs found for SR ${SR_UUID} or they are already unplugged."
+        fi
+
+        echo "Attempting to forget SR ${SR_UUID}..."
+        execute_remote_command "xe sr-forget uuid=${SR_UUID}"
+        echo "Storage Repository forgotten successfully."
+    else
+        echo "Storage Repository '${XCP_NG_SR_ISO_NAME}' not found. Skipping SR removal."
+    fi
+
+    # Task 2: Remove the directory created in 'create' mode
+    echo "Task 2/2: Removing directory '${XCP_NG_SR_ISO_PATH}' on ${XCP_NG_HOST}..."
+    execute_remote_command "rm -rf ${XCP_NG_SR_ISO_PATH}"
+    echo "Directory removed successfully."
+
+    echo "XCP-ng automation script in 'destroy' mode completed."
+}
+
+# =======================================================
+#                      Main Logic
+# =======================================================
+
+# Check for the mode argument
+if [ -z "$1" ]; then
+    echo "Usage: $0 [create|destroy]"
+    exit 1
+fi
+
+MODE="$1"
+
+case "${MODE}" in
+    create)
+        create_resources
+        ;;
+    destroy)
+        destroy_resources
+        ;;
+    *)
+        echo "Invalid mode: ${MODE}"
+        echo "Usage: $0 [create|destroy]"
+        exit 1
+        ;;
+esac

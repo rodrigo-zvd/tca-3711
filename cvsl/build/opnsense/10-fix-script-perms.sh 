@@ -1,0 +1,7 @@
+#!/bin/sh
+# Ensure the main cloud-init script is executable
+# Log messages to the same log file for consistency
+LOG_FILE="/var/log/opnsense-initial-config.log"
+echo "$(date): Fixing permissions for 20-opnsense_initial_config.sh." >> "$LOG_FILE"
+chmod +x /usr/local/etc/rc.syshook.d/start/20-opnsense_initial_config.sh
+echo "$(date): Permissions fixed. 20-opnsense_initial_config.sh should now be executable." >> "$LOG_FILE"

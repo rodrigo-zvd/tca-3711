@@ -1,0 +1,9 @@
+#cloud-config
+config_params:
+  TEMPLATE_XML: "/conf/config-cloud-init.xml"
+  TARGET_XML: "/conf/config.xml"
+  WAN_IF: "xn1"
+  IP: "10.140.69.110"
+  SUBNET: "24"
+  GATEWAY: "10.140.69.1"
+  DNS: "10.140.69.1"
