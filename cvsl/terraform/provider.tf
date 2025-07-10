@@ -5,13 +5,13 @@ terraform {
       source  = "vatesfr/xenorchestra"
       version = "0.32.0"
     }
-  #   local = {
-  #     source  = "hashicorp/local"
-  #     version = "2.5.2"
-  #   }
-  # }
+    local = {
+      source  = "hashicorp/local"
+      version = "2.5.2"
+    }
+  }
 
-  # backend "s3" {
+  backend "s3" {
   #   bucket = "terraform-state"
   #   key    = "terraform.state"
   #   region = "placeholder"
@@ -25,9 +25,7 @@ terraform {
   #   skip_region_validation      = true
   #   skip_requesting_account_id  = true
   #   use_path_style              = true
-
-  # }
-}
+  }
 }
 
 provider "xenorchestra" {
