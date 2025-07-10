@@ -59,7 +59,7 @@ pipeline {
     //   }
     // }
     
-    stage('deploy ssh keys') {
+    stage('deploy ssh key') {
       agent {
         docker {
           image 'alpine'
