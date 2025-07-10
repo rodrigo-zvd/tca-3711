@@ -79,7 +79,7 @@ pipeline {
     //   }
     // }
 
-    stage('endpoints') {
+    stage('get endpoints ip addresses') {
       steps {
         script {
           def minioIp = sh(script: "getent hosts minio | awk '{ print \$1 }'", returnStdout: true).trim()
