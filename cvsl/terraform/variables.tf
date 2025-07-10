@@ -5,7 +5,7 @@ variable "xoa_url" {
   default     = "wss://192.168.1.20:8443"
 }
 
-variable "xoa_user" {
+variable "xoa_username" {
   description = "Username for Xen Orchestra"
   type        = string
   sensitive   = true
