@@ -79,16 +79,16 @@ pipeline {
     //   }
     // }
 
-    // stage('endpoints') {
-    //   steps {
-    //     script {
-    //       def minioIp = sh(script: "getent hosts minio | awk '{ print \$1 }'", returnStdout: true).trim()
-    //       env.MINIO_URL = minioIp
-    //       def xoaIp = sh(script: "getent hosts xen-orchestra | awk '{ print \$1 }'", returnStdout: true).trim()
-    //       env.XOA_IP = xoaIp
-    //     }
-    //   }
-    // }
+    stage('endpoints') {
+      steps {
+        script {
+          def minioIp = sh(script: "getent hosts minio | awk '{ print \$1 }'", returnStdout: true).trim()
+          env.MINIO_URL = minioIp
+          def xoaIp = sh(script: "getent hosts xen-orchestra | awk '{ print \$1 }'", returnStdout: true).trim()
+          env.XOA_IP = xoaIp
+        }
+      }
+    }
 
     stage('backend.hcl') {
         agent {
