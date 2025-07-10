@@ -45,6 +45,11 @@ credentials:
               description: "Secret Text"
           - string:
               scope: GLOBAL
+              id: "xoa_token"
+              secret: "${XOA_TOKEN}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
               id: "minio_endpoint"
               secret: "${MINIO_ENDPOINT}"
               description: "Secret Text"
