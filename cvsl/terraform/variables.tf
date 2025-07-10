@@ -23,5 +23,5 @@ variable "xoa_token" {
   description = "Token for Xen Orchestra"
   type        = string
   sensitive   = true
-  default     = "Vx2oBsiRQIb6vRIOlytVuQoHwKFM2iG0LlmQtm5KsFA"
+  default     = "<YOUR XOA TOKEN>"
 }
