@@ -128,7 +128,8 @@ locals {
           # Provide one or more public keys, each on a new line within the heredoc.
           # Ensure correct formatting (e.g., "ssh-rsa AAAAB3NzaC... user@example.com")
           # Use 'EOF' without quotes (as done here) to prevent shell variable expansion in the keys themselves.
-          ssh_public_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAN3JnFSajM3rl8Dg6Pj/ffFpE4dYK9dEiftI2Y2Cke0 rodrigo@YogaSlim6"
+          # ssh_public_keys = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAN3JnFSajM3rl8Dg6Pj/ffFpE4dYK9dEiftI2Y2Cke0 rodrigo@YogaSlim6"
+          ssh_public_keys = file("id_ed25519.pub")
 
           # --- Timezone Configuration ---
           set_timezone = "true"           # Set to "true" to change timezone, "false" to skip
