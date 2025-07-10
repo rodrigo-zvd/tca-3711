@@ -17,4 +17,11 @@ variable "xoa_password" {
   type        = string
   sensitive   = true
   default     = "m3gaFox50"
+} 
+
+variable "xoa_token" {
+  description = "Token for Xen Orchestra"
+  type        = string
+  sensitive   = true
+  default     = "N/A"
 }

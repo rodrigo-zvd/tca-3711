@@ -31,10 +31,10 @@ terraform {
 provider "xenorchestra" {
   # Must be ws or wss
   url      = var.xoa_url      # Or set XOA_URL environment variable
-  username = var.xoa_username    # Or set XOA_USER environment variable
-  password = var.xoa_password # Or set XOA_PASSWORD environment variable
+  # username = var.xoa_username    # Or set XOA_USER environment variable
+  # password = var.xoa_password # Or set XOA_PASSWORD environment variable
   # XOA_USER and XOA_PASSWORD cannot be set, nor can their arguments
-  # token = "Rf7dqNSsZOEGGsP14q7m8RgXH-jmx80I5C9ahsMq280" # or set XOA_TOKEN environment variable
+  token = var.xoa_token # or set XOA_TOKEN environment variable
   # This is false by default and
   # will disable ssl verification if true.
   # This is useful if your deployment uses
