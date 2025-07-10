@@ -90,18 +90,13 @@ pipeline {
       }
     }
 
-    stage('backend.hcl') {
+    stage('generate backend.hcl') {
         agent {
           docker {
               image 'hairyhenderson/gomplate:alpine'
               args "--entrypoint= -v ${PWD}:/work -w /work --env MINIO_ENDPOINT=${MINIO_ENDPOINT} --env MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY} --env MINIO_SECRET_KEY=${MINIO_SECRET_KEY}"
           }
         }
-        // environment {
-        //   MINIO_ENDPOINT   = credentials('minio_endpoint')
-        //   MINIO_ACCESS_KEY = credentials('minio_access_key')
-        //   MINIO_SECRET_KEY = credentials('minio_secret_key')
-        // }
         steps {
           dir('cvsl/terraform') {
             sh '''
@@ -118,11 +113,6 @@ pipeline {
               args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
           }
         }
-        // environment {
-        //   MINIO_ENDPOINT   = credentials('minio_endpoint')
-        //   MINIO_ACCESS_KEY = credentials('minio_access_key')
-        //   MINIO_SECRET_KEY = credentials('minio_secret_key')
-        // }
         steps {
           dir('cvsl/terraform') {
             sh '''
@@ -190,34 +180,6 @@ pipeline {
         }
       }
     }
-
-    // stage('kubespray') {
-    //   agent {
-    //     docker {
-    //       image 'quay.io/kubespray/kubespray:v2.28.0'
-    //       args '--entrypoint="" -u root'
-    //     }
-    //   }
-    //   steps {
-    //     dir('cvsl/terraform') {
-    //       sh '''
-    //         export ANSIBLE_ROLES_PATH="$ANSIBLE_ROLES_PATH:/kubespray/roles"
-    //         export ANSIBLE_HOST_KEY_CHECKING="False"
-
-    //         ansible-playbook \
-    //           --become \
-    //           --inventory inventory.ini \
-    //           --private-key id_ed25519 \
-    //           /kubespray/cluster.yml
-    //       '''
-    //     }
-    //   }
-    //   when {
-    //     expression {
-    //       params.CREATE_OR_DESTROY == "Create"
-    //     }
-    //   }
-    // }
 
     stage('terraform destroy') {
       agent {
