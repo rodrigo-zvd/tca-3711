@@ -118,11 +118,11 @@ pipeline {
               args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
           }
         }
-        environment {
-          MINIO_ENDPOINT   = credentials('minio_endpoint')
-          MINIO_ACCESS_KEY = credentials('minio_access_key')
-          MINIO_SECRET_KEY = credentials('minio_secret_key')
-        }
+        // environment {
+        //   MINIO_ENDPOINT   = credentials('minio_endpoint')
+        //   MINIO_ACCESS_KEY = credentials('minio_access_key')
+        //   MINIO_SECRET_KEY = credentials('minio_secret_key')
+        // }
         steps {
           dir('cvsl/terraform') {
             sh '''
