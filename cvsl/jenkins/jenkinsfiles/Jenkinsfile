@@ -136,7 +136,7 @@ pipeline {
     stage('terraform init') {
       agent {
         docker {
-          image 'hashicorp/terraform:1.11.4'
+          image 'hashicorp/terraform:1.12.2'
           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
@@ -152,7 +152,7 @@ pipeline {
     stage('terraform plan') {
       agent {
         docker {
-          image 'hashicorp/terraform:1.11.4'
+          image 'hashicorp/terraform:1.12.2'
           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
@@ -173,7 +173,7 @@ pipeline {
     stage('terraform apply') {
       agent {
         docker {
-          image 'hashicorp/terraform:1.11.4'
+          image 'hashicorp/terraform:1.12.2'
           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
@@ -222,7 +222,7 @@ pipeline {
     stage('terraform destroy') {
       agent {
         docker {
-          image 'hashicorp/terraform:1.11.4'
+          image 'hashicorp/terraform:1.12.2'
           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
