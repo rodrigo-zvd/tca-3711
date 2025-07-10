@@ -29,7 +29,6 @@ services:
     volumes:
       - jenkins-data:/var/jenkins_home
       - jenkins-docker-certs:/certs/client:ro
-      - ./jenkins/jenkinsfiles:/var/jenkins_home/jenkinsfiles:ro
       - ${SSH_PUBLIC_KEY}:/certs/id_ed25519.pub:ro
       - ${SSH_PRIVATE_KEY}:/certs/id_ed25519:ro
 

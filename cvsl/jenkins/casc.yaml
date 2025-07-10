@@ -74,13 +74,20 @@ credentials:
                   privateKey: "${readFile:/certs/id_ed25519}"
 jobs:
   - script: >
-      pipelineJob('Teste') {
+      pipelineJob('Build Lab CVSL') {
         definition {
-            cps {
-                // O conteúdo do Jenkinsfile será lido do caminho especificado no container do Jenkins.
-                // Você precisará montar este arquivo no container.
-                script("""${readFile:/var/jenkins_home/jenkinsfiles/Jenkinsfile}""")
-                sandbox(true)
+            cpsScm {
+                scm {
+                    git {
+                        remote {
+                            url('https://github.com/rodrigo-zvd/tca-3711.git')
+                            // Para repositórios privados, adicione:
+                            // credentials('seu-id-de-credencial')
+                        }
+                        branch('*/main')
+                    }
+                }
+                scriptPath('cvsl/jenkins/jenkinsfiles/Jenkinsfile')
             }
         }
       }

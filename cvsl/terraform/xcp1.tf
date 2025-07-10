@@ -47,10 +47,6 @@ resource "xenorchestra_vm" "xcp1" {
   exp_nested_hvm = "true"
 
   #network of vm
-  # # network debug
-  # network {
-  #   network_id = data.xenorchestra_network.wan.id
-  # }
   #vlan1 
   network {
     network_id = xenorchestra_network.vlan_1[count.index].id
@@ -67,7 +63,6 @@ resource "xenorchestra_vm" "xcp1" {
   network {
     network_id = xenorchestra_network.vlan_san[count.index].id
   }
-
 
   #disk of vm
   disk {

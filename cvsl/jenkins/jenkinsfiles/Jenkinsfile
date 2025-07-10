@@ -102,7 +102,7 @@ pipeline {
         //   MINIO_SECRET_KEY = credentials('minio_secret_key')
         // }
         steps {
-          dir('../../terraform') {
+          dir('cvsl/terraform') {
             sh '''
             /bin/gomplate -f backend.hcl.tpl -o backend.hcl -V
             '''
