@@ -11,5 +11,4 @@ docker run --rm -it \
 -e XO_TOKEN="uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc" \
 -e XO_ALLOW_UNAUTHORIZED=true \
 -v $(pwd):/scripts \
-rodrigorao/xo-cli:alpine \ 
-sh /scripts/opnsense.sh
+rodrigorao/xo-cli:alpine "/scripts/opnsense.sh"
