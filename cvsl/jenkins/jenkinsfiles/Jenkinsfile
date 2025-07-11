@@ -185,14 +185,14 @@ pipeline {
       agent {
         docker {
           image 'rodrigorao/xo-cli:alpine'
-          args "-v ${PWD}:/scripts"
+          args "--env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts"
         }
       }
       steps {
         dir('cvsl/xo-cli'){
-        sh """
-          XO_URL="${env.XOA_IP}" SCRIPT_FILE="opnsense.sh" bash /scripts/opnsense.sh
-        """
+        sh '''
+          "/scripts/opnsense.sh"
+        '''
         }
       }
       when {
