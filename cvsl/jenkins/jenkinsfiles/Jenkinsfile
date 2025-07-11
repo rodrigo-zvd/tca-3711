@@ -191,7 +191,7 @@ pipeline {
       steps {
         dir('cvsl/xo-cli'){
         sh '''
-          ./opnsense.sh
+          sh opnsense.sh
         '''
         }
       }
