@@ -185,7 +185,7 @@ pipeline {
       agent {
         docker {
           image 'rodrigorao/xo-cli:alpine'
-          args "-v ${PWD}/cvsl/xo-cli:/scripts"
+          args "-v ${PWD}:/scripts"
         }
       }
       steps {
