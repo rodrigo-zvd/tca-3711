@@ -33,7 +33,7 @@ The container requires environment variables for authentication. You must choose
 ### Authentication
 
 - **Using Username and Password:**
-  - `XO_URL`: The URL of your Xen-Orchestra instance (e.g., `https://192.168.1.20:8443`).
+  - `XO_URL`: The URL of your Xen-Orchestra instance (e.g., `https://localhost`).
   - `XO_USERNAME`: The username for your XO account.
   - `XO_PASSWORD`: The password for your XO account.
 
@@ -57,9 +57,9 @@ This example gets the ID of the `admin` user and filters the JSON output. The en
 
 ```bash
 docker run --rm -it \
-  -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
-  -e XO_USERNAME="admin" \
-  -e XO_PASSWORD="m3gaFox50" \
+  -e XO_URL="your-xo-url" \
+  -e XO_USERNAME="your-login" \
+  -e XO_PASSWORD="your-password" \
   -e XO_ALLOW_UNAUTHORIZED="true" \
   xo-cli \
   sh -c "xo-cli user.getAll --json | jq -r '.[] | select(.email == \"admin\") | .id'"
@@ -71,7 +71,7 @@ Bash
 
 ```bash
 docker run --rm -it \
-  -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
+  -e XO_URL="your-xo-url" \
   -e XO_TOKEN="your-super-secret-token" \
   -e XO_ALLOW_UNAUTHORIZED="true" \
   xo-cli \
@@ -98,9 +98,9 @@ Run the container by mounting your local directory to the container's /scripts d
 
 ```bash
 docker run --rm -it \
-  -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
-  -e XO_USERNAME="admin" \
-  -e XO_PASSWORD="m3gaFox50" \
+  -e XO_URL="your-xo-url" \
+  -e XO_USERNAME="your-login" \
+  -e XO_PASSWORD="your-password" \
   -e SCRIPT_FILE="my_script.sh" \
   -v $(pwd):/scripts \
   xo-cli
@@ -109,7 +109,7 @@ docker run --rm -it \
 
 ```bash
 docker run --rm -it \
-  -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
+  -e XO_URL="your-xo-url" \
   -e XO_TOKEN="your-super-secret-token" \
   -e SCRIPT_FILE="my_script.sh" \
   -v $(pwd):/scripts \
@@ -123,4 +123,4 @@ docker run --rm -it \
 
 - write /dev/stdout: broken pipe: This occurs when the process supplying data to a pipe terminates prematurely. Enclose the command pipeline in sh -c "..." to ensure it runs entirely within the container.
 
-- Command "hangs" and does not return: This indicates a network or authentication problem. Verify your XO_URL, credentials, and firewall rules to ensure the container can communicate with your XO instance.
+-Command "hangs" and does not return: This indicates a network or authentication problem. Verify your XO_URL, credentials, and firewall rules to ensure the container can communicate with your XO instance.
