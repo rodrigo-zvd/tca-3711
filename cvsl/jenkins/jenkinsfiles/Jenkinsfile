@@ -3,8 +3,8 @@ pipeline {
 
   environment {
     XOA_URL = credentials('xoa_url')
-    // XOA_USER = credentials('xoa_user')
-    // XOA_PASSWORD = credentials('xoa_password')
+    XOA_USER = credentials('xoa_user')
+    XOA_PASSWORD = credentials('xoa_password')
     XOA_TOKEN = credentials('xoa_token')
     JENKINS_PUB_KEY = credentials('jenkins-pub-key')
     MINIO_ENDPOINT   = credentials('minio_endpoint')
