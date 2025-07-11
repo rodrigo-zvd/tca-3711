@@ -182,22 +182,23 @@ pipeline {
     }
 
 stage('disable txChecksumming on opnsense vms') {
-    agent {
-        docker {
-            image 'rodrigorao/xo-cli:alpine'
-            args "--entrypoint=sh -v ${PWD}/cvsl/xo-cli:/scripts --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
-        }
+  agent {
+    docker {
+      image 'rodrigorao/xo-cli:alpine'
+      args "-v ${PWD}/cvsl/xo-cli:/scripts --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
     }
-    steps {
-        dir('cvsl/xo-cli'){
-            sh 'sh opnsense.sh'
-        }
+  }
+  steps {
+    sh '''
+      cd /scripts
+      sh opnsense.sh
+    '''
+  }
+  when {
+    expression {
+      params.CREATE_OR_DESTROY == "Create"
     }
-    when {
-        expression {
-            params.CREATE_OR_DESTROY == "Create"
-        }
-    }
+  }
 }
 
     stage('terraform destroy') {
