@@ -185,7 +185,7 @@ pipeline {
       agent {
         docker {
           image 'rodrigorao/xo-cli:alpine'
-          args "--entrypoint= -e XO_URL="${XOA_URL}" -e XO_TOKEN=${XOA_TOKEN} -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE="opnsense.sh" -v $(pwd):/scripts"
+          args "--entrypoint= -e XO_URL="${XOA_URL}" -e XO_TOKEN=${XOA_TOKEN} -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE=opnsense.sh -v $(pwd):/scripts"
         }
       }
       steps {
