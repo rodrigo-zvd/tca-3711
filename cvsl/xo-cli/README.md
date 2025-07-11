@@ -63,20 +63,22 @@ docker run --rm -it \
   -e XO_ALLOW_UNAUTHORIZED="true" \
   xo-cli \
   sh -c "xo-cli user.getAll --json | jq -r '.[] | select(.email == \"admin\") | .id'"
-
-b. With a Token
+```
+#### b. With a Token
 
 This example performs the same action as above, but uses an authentication token instead of a username and password.
 Bash
 
+```bash
 docker run --rm -it \
   -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
   -e XO_TOKEN="your-super-secret-token" \
   -e XO_ALLOW_UNAUTHORIZED="true" \
   xo-cli \
   sh -c "xo-cli user.getAll --json | jq -r '.[] | select(.email == \"admin\") | .id'"
+```
 
-2. Running a Script
+### 2. Running a Script
 
 This is the recommended method for running a series of commands or more complex automation tasks. The script file is mounted from your host into the container.
 
@@ -85,17 +87,17 @@ This is the recommended method for running a series of commands or more complex 
         Add 2>/dev/null to xo-cli commands that output JSON to prevent log messages from breaking the JSON pipe.
     Bash
 
+```bash
     #!/bin/sh
     echo "Starting script execution..."
     echo "Listing all VMs:"
     xo-cli rest get vms fields=name_label,power_state --json 2>/dev/null | jq '.'
-
+```
     Run the container by mounting your local directory to the container's /scripts directory and using the SCRIPT_FILE environment variable to specify the script.
 
-a. With Username and Password
+#### a. With Username and Password
 
-Bash
-
+```bash
 docker run --rm -it \
   -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
   -e XO_USERNAME="admin" \
@@ -103,19 +105,18 @@ docker run --rm -it \
   -e SCRIPT_FILE="my_script.sh" \
   -v $(pwd):/scripts \
   xo-cli
+```
+#### b. With a Token
 
-b. With a Token
-
-Bash
-
+```bash
 docker run --rm -it \
   -e XO_URL="[https://192.168.1.20:8443](https://192.168.1.20:8443)" \
   -e XO_TOKEN="your-super-secret-token" \
   -e SCRIPT_FILE="my_script.sh" \
   -v $(pwd):/scripts \
   xo-cli
-
-Troubleshooting
+```
+### Troubleshooting
 
     parse error: Invalid numeric literal: This means jq is trying to parse non-JSON text. Ensure you're filtering out log messages from the xo-cli command by using 2>/dev/null.
 
