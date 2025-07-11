@@ -1,0 +1,67 @@
+---
+- name: Install Xen Orchestra
+  hosts: xenorchestra # Substitua 'your_target_hosts' pelo nome do seu grupo de hosts ou IP
+  become: true # Executa todas as tarefas com privilégios de root (sudo)
+
+  vars:
+    xo_repo_url: "https://github.com/ronivay/XenOrchestraInstallerUpdater"
+    xo_install_dir: "/opt/XenOrchestraInstallerUpdater" # Diretório onde o repositório será clonado e a instalação ocorrerá
+
+  tasks:
+    - name: Ensure git is installed (Debian-like systems)
+      ansible.builtin.apt:
+        name: git
+        state: present
+        update_cache: yes # Atualiza o cache de pacotes antes de instalar
+      when: ansible_os_family == "Debian" # Condição para executar apenas em sistemas Debian
+
+    - name: Ensure git is installed (RHEL-like systems)
+      ansible.builtin.yum:
+        name: git
+        state: present
+        update_cache: yes # Atualiza o cache de pacotes antes de instalar
+      when: ansible_os_family == "RedHat" # Condição para executar apenas em sistemas RHEL
+
+    - name: Clone XenOrchestraInstallerUpdater repository
+      ansible.builtin.git:
+        repo: "{{ xo_repo_url }}"
+        dest: "{{ xo_install_dir }}"
+        version: master # Você pode especificar uma branch ou tag diferente se necessário
+        update: yes # Garante que o repositório esteja atualizado se já existir
+        accept_hostkey: yes # Aceita automaticamente a chave do host do GitHub
+      tags:
+        - clone_repo
+
+    - name: Copy sample.xo-install.cfg to xo-install.cfg
+      ansible.builtin.copy:
+        src: "{{ xo_install_dir }}/sample.xo-install.cfg"
+        dest: "{{ xo_install_dir }}/xo-install.cfg"
+        remote_src: yes # Indica que o arquivo de origem está no host remoto
+        force: no # Não sobrescreve se xo-install.cfg já existir, para idempotência
+      tags:
+        - copy_config
+
+    - name: Configure xo-install.cfg for self-signed certificate and XO 6 UI
+      ansible.builtin.lineinfile:
+        path: "{{ xo_install_dir }}/xo-install.cfg"
+        regexp: "^{{ item.key }}=" # Expressão regular para encontrar a linha da variável
+        line: "{{ item.key }}=\"{{ item.value }}\"" # A nova linha a ser definida
+        state: present # Garante que a linha exista e esteja com o valor correto
+      loop:
+        - { key: "PORT", value: "443" }
+        - { key: "CONFIGUPDATE", value: "true" }
+        - { key: "PATH_TO_HTTPS_CERT", value: "$INSTALLDIR/xo.crt" } # Caminho completo para o certificado
+        - { key: "PATH_TO_HTTPS_KEY", value: "$INSTALLDIR/xo.key" } # Caminho completo para a chave
+        - { key: "AUTOCERT", value: "true" }
+        - { key: "INCLUDE_V6", value: "true" }
+      tags:
+        - configure_config
+
+    - name: Execute xo-install.sh script
+      ansible.builtin.command: "{{ xo_install_dir }}/xo-install.sh --install"
+      args:
+        chdir: "{{ xo_install_dir }}" # Muda para o diretório do script antes de executá-lo
+      # Esta etapa pode levar vários minutos para ser concluída, dependendo da velocidade da internet e do hardware do servidor.
+      # O script xo-install.sh é projetado para instalar todas as dependências necessárias.
+      tags:
+        - run_installer

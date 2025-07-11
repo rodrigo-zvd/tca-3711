@@ -1,0 +1,13 @@
+#network:
+  version: 1
+  config:
+    - type: physical
+      name: ${device}
+      subnets:
+        - type: static
+          address: ${ip}
+          gateway: ${gateway}
+    - type: nameserver
+      address:
+        - ${dns1}
+        - ${dns2}

@@ -1,0 +1,20 @@
+#cloud-config
+hostname: ${hostname}
+fqdn: ${hostname}.${domain}
+manage_etc_hosts: ${manage_etc_hosts}
+timezone: ${timezone}
+locale: ${locale}
+keyboard:
+  layout: ${keyboard_layout}
+user: ${user}
+password: ${password}
+chpasswd: {expire: ${chpasswd}}
+ssh_pwauth: ${ssh_pwauth}
+ssh_authorized_keys: 
+  - ${ssh_public_key}
+# package_update: ${package_update}
+# package_upgrade: ${package_upgrade}
+runcmd: 
+  - "echo 'deb [trusted=yes] https://gitlab.com/api/v4/projects/xen-project%252Fxen-guest-agent/packages/generic/deb-amd64/ release/' > /etc/apt/sources.list.d/xen-guest-agent.list"
+  - "grep -v cdrom /etc/apt/sources.list > /tmp/sources.list && mv /tmp/sources.list /etc/apt/"
+  - "apt update && apt install xen-guest-agent"
