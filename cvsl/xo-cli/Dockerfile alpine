@@ -1,0 +1,29 @@
+# Use a Node.js base image with a specific tag for stability.
+FROM alpine:3.22.0
+
+# Set the working directory inside the container.
+WORKDIR /scripts
+
+# Install Node.js, npm, and other necessary system packages, including common shell utilities.
+RUN apk add --no-cache \
+    nodejs \
+    npm \
+    jq \
+    python3 \
+    curl \
+    bash
+
+# Copy the entrypoint script into the container.
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+
+# Ensure the entrypoint script is executable.
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Install the xo-cli globally.
+RUN npm install --global xo-cli
+
+# Set the entrypoint for the container.
+ENTRYPOINT ["entrypoint.sh"]
+
+# Set a default command to be run if no command is provided.
+CMD ["xo-cli", "--help"]
