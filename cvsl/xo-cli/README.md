@@ -117,10 +117,10 @@ docker run --rm -it \
 ```
 ### Troubleshooting
 
-parse error: Invalid numeric literal: This means jq is trying to parse non-JSON text. Ensure you're filtering out log messages from the xo-cli command by using 2>/dev/null.
+- parse error: Invalid numeric literal: This means jq is trying to parse non-JSON text. Ensure you're filtering out log messages from the xo-cli command by using 2>/dev/null.
 
-not found error: Check that the SCRIPT_FILE variable is set correctly and that the volume is properly mounted.
+- not found error: Check that the SCRIPT_FILE variable is set correctly and that the volume is properly mounted.
 
-write /dev/stdout: broken pipe: This occurs when the process supplying data to a pipe terminates prematurely. Enclose the command pipeline in sh -c "..." to ensure it runs entirely within the container.
+- write /dev/stdout: broken pipe: This occurs when the process supplying data to a pipe terminates prematurely. Enclose the command pipeline in sh -c "..." to ensure it runs entirely within the container.
 
-Command "hangs" and does not return: This indicates a network or authentication problem. Verify your XO_URL, credentials, and firewall rules to ensure the container can communicate with your XO instance.
+- Command "hangs" and does not return: This indicates a network or authentication problem. Verify your XO_URL, credentials, and firewall rules to ensure the container can communicate with your XO instance.
