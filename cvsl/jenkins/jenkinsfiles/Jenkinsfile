@@ -196,6 +196,7 @@ stage('disable txChecksumming on opnsense vms') {
       sh opnsense.sh
     '''
   }
+  }
   when {
     expression {
       params.CREATE_OR_DESTROY == "Create"
