@@ -185,12 +185,14 @@ stage('disable txChecksumming on opnsense vms') {
   agent {
     docker {
       image 'rodrigorao/xo-cli:alpine'
-      args "-v ${PWD}/cvsl/xo-cli:/scripts --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
+      // Use the entrypoint flag to disable the default entrypoint
+      args "--entrypoint='' -v ${PWD}:/scripts --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
     }
   }
   steps {
+    dir('cvsl/xo-cli') {
     sh '''
-      cd /scripts
+      #cd /scripts
       sh opnsense.sh
     '''
   }
