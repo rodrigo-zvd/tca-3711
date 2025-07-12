@@ -15,7 +15,7 @@ if [ -z "$XO_URL" ] || [ -z "$XO_TOKEN" ]; then
 fi
 
 # Execute curl, filter with jq, and store UUIDs
-UUIDS=$(curl -s -k -X 'GET' \
+UUIDS=$(curl -k -X 'GET' \
         -b "authenticationToken=$XO_TOKEN" \
         "${XO_URL}/rest/v0/vms?fields=name_label%2Cpower_state%2Cuuid&filter=$FILTER_TAG_URL" \
         -H 'accept: application/json' | jq -r '.[].uuid')
