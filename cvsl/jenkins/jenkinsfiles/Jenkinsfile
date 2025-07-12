@@ -161,65 +161,65 @@ pipeline {
       }
     }
 
-//     stage('terraform apply') {
-//       agent {
-//         docker {
-//           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
-//         }
-//       }
-//       steps {
-//         dir('cvsl/terraform'){
-//         sh '''
-//           terraform apply -no-color -auto-approve
-//         '''
-//         }
-//       }
-//       when {
-//         expression {
-//           params.CREATE_OR_DESTROY == "Create"
-//         }
-//       }
-//     }
+    stage('terraform apply') {
+      agent {
+        docker {
+          image 'hashicorp/terraform:1.12.2'
+          args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
+        }
+      }
+      steps {
+        dir('cvsl/terraform'){
+        sh '''
+          terraform apply -no-color -auto-approve
+        '''
+        }
+      }
+      when {
+        expression {
+          params.CREATE_OR_DESTROY == "Create"
+        }
+      }
+    }
 
-//   stage('Disable txChecksumming on OPNsense VMs') {
-//       agent {
-//           docker {
-//               image 'rodrigorao/xo-cli:alpine'
-//               alwaysPull true
-//               args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
-//           }
-//       }
-//       steps {
-//         dir('cvsl/terraform') {
-//           sh 'sh disable-tx-checksumming.sh'
-//         }
-//       }
-//       when {
-//         expression { params.CREATE_OR_DESTROY == "Create" }
-//       }
-//     }
+  stage('Disable txChecksumming on OPNsense VMs') {
+      agent {
+          docker {
+              image 'rodrigorao/xo-cli:alpine'
+              alwaysPull true
+              args "--entrypoint= --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
+          }
+      }
+      steps {
+        dir('cvsl/terraform') {
+          sh 'sh disable-tx-checksumming.sh'
+        }
+      }
+      when {
+        expression { params.CREATE_OR_DESTROY == "Create" }
+      }
+    }
 
-//     stage('terraform destroy') {
-//       agent {
-//         docker {
-//           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
-//         }
-//       }
-//       steps {
-//         dir('cvsl/terraform') {
-//           sh '''
-//             terraform apply -destroy -no-color -auto-approve
-//           '''
-//         }
-//       }
-//       when {
-//         expression {
-//           params.CREATE_OR_DESTROY == "Destroy"
-//         }
-//       }
-//     }
+    stage('terraform destroy') {
+      agent {
+        docker {
+          image 'hashicorp/terraform:1.12.2'
+          args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
+        }
+      }
+      steps {
+        dir('cvsl/terraform') {
+          sh '''
+            terraform apply -destroy -no-color -auto-approve
+          '''
+        }
+      }
+      when {
+        expression {
+          params.CREATE_OR_DESTROY == "Destroy"
+        }
+      }
+    }
 
 
 }
