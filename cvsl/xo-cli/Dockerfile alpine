@@ -12,19 +12,30 @@ RUN apk add --no-cache \
     curl \
     bash
 
-# Install the xo-cli globally.
+# Criar o diretório de configuração e dar permissão de escrita para todos os usuários.
+# O xo-cli tenta criar o diretório ~/.config, então vamos criar este diretório em um local que o Jenkins tem permissão de escrita e mapeá-lo.
+# A melhor prática é usar um diretório dentro do /tmp, que geralmente é acessível a todos.
+# O Jenkins pode mapear o home do usuário ou um diretório temporário
+RUN mkdir -p /tmp/.config && chmod -R 777 /tmp/.config
+
+# Instalação do xo-cli globalmente.
+# Como o npm é executado como root, o xo-cli será instalado em um diretório global.
 RUN npm install --global xo-cli
 
-# Copy the new entrypoint script into the container.
+# Copiar o novo entrypoint script para o contêiner.
 COPY entrypoint-alpine.sh /usr/local/bin/entrypoint.sh
 
-# Ensure the entrypoint script is executable.
+# Garantir que o script de entrypoint seja executável.
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Configurar a variável de ambiente HOME para um diretório que tem permissão de escrita.
+# Isso garante que o xo-cli salve suas configurações em um local acessível.
+ENV HOME=/tmp
 
 # Set the entrypoint for the container.
 ENTRYPOINT ["entrypoint.sh"]
 
 # Set the default command to an interactive shell.
-# This makes the container behave like a standard Alpine image when run interactively,
-# after the entrypoint has run.
+# Isso faz com que o contêiner se comporte como uma imagem Alpine padrão quando executado interativamente,
+# após o entrypoint.
 CMD ["/bin/sh"]
