@@ -24,7 +24,7 @@ resource "xenorchestra_vm" "xenorchestra" {
 
   #cloud-init config
   cloud_config = templatefile("cloud_config.tftpl", {
-    hostname         = local.vms.xenorchestra.name
+    hostname         = "xo-tca3711"
     domain           = local.network.domain
     manage_etc_hosts = local.vms.xenorchestra.cloud_init.cloud_config.manage_etc_hosts
     timezone         = local.vms.xenorchestra.cloud_init.cloud_config.timezone

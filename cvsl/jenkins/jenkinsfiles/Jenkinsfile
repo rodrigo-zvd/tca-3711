@@ -3,6 +3,7 @@ pipeline {
 
   environment {
     XOA_URL = credentials('xoa_url')
+    XOA_URL_TF = credentials('xoa_url_tf')
     XOA_USER = credentials('xoa_user')
     XOA_PASSWORD = credentials('xoa_password')
     XOA_TOKEN = credentials('xoa_token')
@@ -84,7 +85,8 @@ pipeline {
         script {
           def minioIp = sh(script: "getent hosts minio | awk '{ print \$1 }'", returnStdout: true).trim()
           env.MINIO_URL = minioIp
-          def xoaIp = sh(script: "getent hosts xen-orchestra | awk '{ print \$1 }'", returnStdout: true).trim()
+          // def xoaIp = sh(script: "getent hosts xen-orchestra | awk '{ print \$1 }'", returnStdout: true).trim()
+          def xoaIp = sh(script: "echo ${XOA_URL_TF} | awk '{ print \$1 }'", returnStdout: true).trim()
           env.XOA_IP = xoaIp
         }
       }
@@ -111,7 +113,6 @@ pipeline {
           docker {
               image 'hairyhenderson/gomplate:alpine'
               args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
-              // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_TOKEN=${XOA_TOKEN}"
           }
         }
         steps {

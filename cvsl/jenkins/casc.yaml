@@ -35,6 +35,11 @@ credentials:
               description: "Secret Text"
           - string:
               scope: GLOBAL
+              id: "xoa_url_tf"
+              secret: "${XOA_URL_TF}"
+              description: "Secret Text"
+          - string:
+              scope: GLOBAL
               id: "xoa_user"
               secret: "${XOA_USER}"
               description: "Secret Text"

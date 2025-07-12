@@ -13,6 +13,7 @@ services:
       - XCP_USER=${XCP_USER}
       - XCP_PASSWORD=${XCP_PASSWORD}d
       - XOA_URL=${XOA_URL}
+      - XOA_URL_TF=${XOA_URL}
       - XOA_USER=${XOA_USER}
       - XOA_PASSWORD=${XOA_PASSWORD}
       - XOA_TOKEN=${XOA_TOKEN}
@@ -121,8 +122,9 @@ services:
       timeout: 20s
       retries: 3
   xo-cli:
-    build:
-      context: xen-orchestra/
+    image: rodrigorao/xo-cli:alpine
+    # build:
+    #   context: xen-orchestra/
     depends_on:
       xen-orchestra:
         condition: service_healthy
