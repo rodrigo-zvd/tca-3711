@@ -194,17 +194,18 @@ pipeline {
   //     }
   // }
 
-    stage('Disable txChecksumming on OPNsense VMs') {
+  stage('Disable txChecksumming on OPNsense VMs') {
       agent {
           docker {
               image 'rodrigorao/xo-cli:alpine'
-              args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts --env XDG_CONFIG_HOME=/config"
+              args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true --env XDG_CONFIG_HOME=/config"
           }
       }
 
       steps {
         dir('cvsl/xo-cli') {
-          // Adicione '-x' para depuração
+          // O script já está no diretório de trabalho.
+          // O Jenkins o executa a partir do diretório 'cvsl/xo-cli'.
           sh 'sh opnsense.sh'
         }
       }
