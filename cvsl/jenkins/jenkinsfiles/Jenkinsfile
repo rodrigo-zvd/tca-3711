@@ -189,7 +189,7 @@ pipeline {
         }
         steps {
             dir('cvsl/xo-cli') {
-                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE="opnsense.sh" -v ${PWD}:/scripts rodrigorao/xo-cli:alpine"
+                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE=opnsense.sh -v ${PWD}:/scripts rodrigorao/xo-cli:alpine"
             }
         }
     }
