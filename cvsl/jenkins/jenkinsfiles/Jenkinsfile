@@ -193,26 +193,21 @@ pipeline {
   //         }
   //     }
   // }
-stage('Disable txChecksumming on OPNsense VMs') {
-    agent {
-        docker {
-            image 'rodrigorao/xo-cli:alpine'
-            // Utilize a interpolação de string do Groovy para o volume
-            // A variável `WORKSPACE` é mais confiável que o PWD
-            args "--entrypoint='' --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true -v ${WORKSPACE}/cvsl/xo-cli:/scripts"
+
+        stage('Disable txChecksumming on OPNsense VMs') {
+            when {
+                expression {
+                    params.CREATE_OR_DESTROY == "Create"
+                }
+            }
+            steps {
+                script {
+                    dir('cvsl/xo-cli') {
+                        sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
+                    }
+                }
+            }
         }
-    }
-    steps {
-        sh '''
-            /scripts/opnsense.sh
-        '''
-    }
-    when {
-        expression {
-            params.CREATE_OR_DESTROY == "Create"
-        }
-    }
-}
 
     stage('terraform destroy') {
       agent {
