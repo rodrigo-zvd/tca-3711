@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Define variables
-XO_URL=https://192.168.1.40
-XO_TOKEN=uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc
+# XO_URL=<your-url>
+# XO_TOKEN=<your-token>
 
 OPNSENSE_TAG=opnsense
 FILTER_TAG_URL=$(echo "tags:$OPNSENSE_TAG" | sed 's/:/%3A/')
