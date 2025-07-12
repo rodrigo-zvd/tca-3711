@@ -113,7 +113,6 @@ pipeline {
           docker {
               image 'hairyhenderson/gomplate:alpine'
               args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL_TF} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
-              // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL_TF} --env --env XOA_TOKEN=${XOA_TOKEN}"
           }
         }
         steps {
@@ -125,21 +124,21 @@ pipeline {
     }
     }
 
-//     stage('terraform init') {
-//       agent {
-//         docker {
-//           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
-//         }
-//       }
-//       steps {
-//         dir('cvsl/terraform'){
-//         sh '''
-//           terraform init -no-color -migrate-state -backend-config=backend.hcl
-//         '''
-//         }
-//       }
-//     }
+    stage('terraform init') {
+      agent {
+        docker {
+          image 'hashicorp/terraform:1.12.2'
+          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+        }
+      }
+      steps {
+        dir('cvsl/terraform'){
+        sh '''
+          terraform init -no-color -migrate-state -backend-config=backend.hcl
+        '''
+        }
+      }
+    }
   
 //     stage('terraform plan') {
 //       agent {
