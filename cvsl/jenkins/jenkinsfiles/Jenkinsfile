@@ -193,23 +193,19 @@ pipeline {
   //         }
   //     }
   // }
- stage('Disable txChecksumming on OPNsense VMs') {
+stage('Disable txChecksumming on OPNsense VMs') {
     agent {
         docker {
             image 'rodrigorao/xo-cli:alpine'
-            // Use --entrypoint='' para contornar o ENTRYPOINT problemático da imagem
-            // E passe cada argumento de forma individual na string
-            args "--entrypoint='' --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}/cvsl/xo-cli:/scripts"
+            // Utilize a interpolação de string do Groovy para o volume
+            // A variável `WORKSPACE` é mais confiável que o PWD
+            args "--entrypoint='' --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true -v ${WORKSPACE}/cvsl/xo-cli:/scripts"
         }
     }
     steps {
-        // O `dir` agora não é estritamente necessário, mas ajuda a garantir
-        // que o ${PWD} na linha `args` aponte para o lugar certo
-        dir('cvsl/xo-cli') {
-            sh '''
-              /scripts/opnsense.sh
-            '''
-        }
+        sh '''
+            /scripts/opnsense.sh
+        '''
     }
     when {
         expression {
