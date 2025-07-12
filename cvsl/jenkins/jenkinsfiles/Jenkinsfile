@@ -192,8 +192,8 @@ pipeline {
           }
       }
       steps {
-        dir('cvsl/xo-cli') {
-          sh 'sh opnsense.sh'
+        dir('cvsl/terraform') {
+          sh 'sh disable-tx-checksumming.sh'
         }
       }
       when {

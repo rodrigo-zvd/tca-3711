@@ -5,22 +5,29 @@
 # XO_TOKEN=<your-token>
 
 OPNSENSE_TAG=opnsense
-FILTER_TAG_URL=$(echo "tags:$OPNSENSE_TAG" | sed 's/:/%3A/')
+# FILTER_TAG_URL will be set by a function
 
 # Function to check if necessary environment variables are present
 check_environment_variables() {
     if [ -z "$XO_URL" ] || [ -z "$XO_TOKEN" ]; then
-        echo "Error: XO_URL and XO_TOKEN environment variables must be defined."
+        echo "❌ Error: XO_URL and XO_TOKEN environment variables must be defined."
         echo "To run the script, use:"
         echo "XO_URL=\"<your-url>\" XO_TOKEN=\"<your-token>\" bash opnsense.sh"
         exit 1 # Exit if variables are not set
     fi
 }
 
+# Function to format the tag URL for API requests
+format_tag_url() {
+    # This function sets the global variable FILTER_TAG_URL
+    FILTER_TAG_URL=$(echo "tags:$OPNSENSE_TAG" | sed 's/:/%3A/')
+    echo "🔗 Formatted tag URL: $FILTER_TAG_URL"
+}
+
 # Function to test direct API connection using curl
 test_curl_api_connection() {
-    echo "--- Testing direct API connection with curl ---"
-    echo "API URL: $XO_URL/rest/v0"
+    echo "⚙️ --- Testing direct API connection with curl ---"
+    echo "🔗 API URL: $XO_URL/rest/v0"
 
     # Use the 'curl' command to test the connection.
     # -k: Insecure, allows connections to servers with invalid certificates.
@@ -51,8 +58,8 @@ test_curl_api_connection() {
 
 # Function to test xo-cli connection and authentication
 test_xo_cli_connection() {
-    echo "--- Testing xo-cli connection and authentication ---"
-    echo "Server URL: $XO_URL"
+    echo "⚙️ --- Testing xo-cli connection and authentication ---"
+    echo "🔗 Server URL: $XO_URL"
 
     # Capture the complete output (stdout and stderr) for reliable error checking.
     # The `xo-cli register` command is executed, and then, if authentication
@@ -98,11 +105,14 @@ test_xo_cli_connection() {
 # 1. Check environment variables first
 check_environment_variables
 
-# 2. Run the connection tests
+# 2. Format the tag URL
+format_tag_url
+
+# 3. Run the connection tests
 test_curl_api_connection
 test_xo_cli_connection
 
-echo "All connection tests passed successfully!"
+echo "🎉 All connection tests passed successfully!"
 
 # It will only execute if all above tests pass.
 
@@ -114,11 +124,11 @@ UUIDS=$(curl -s -k -X 'GET' \
 
 # Check if any UUID was found
 if [ -z "$UUIDS" ]; then
-  echo "No VM found with tag '$OPNSENSE_TAG'."
+  echo "🔍 No VM found with tag '$OPNSENSE_TAG'."
 else
   # Loop to process each UUID, using a pipe instead of a here string
   echo "$UUIDS" | while IFS= read -r UUID; do
-    echo "VM UUID: $UUID"
+    echo "🖥️ VM UUID: $UUID"
     
     # Make a new request, filter VIFs and store in a variable
     VIFS=$(curl -s -k -X 'GET' \
@@ -128,11 +138,11 @@ else
     
     # Check if the VM has VIFs and display them
     if [ -z "$VIFS" ]; then
-      echo "  VM $UUID has no VIFs."
+      echo "⚠️ VM $UUID has no VIFs."
     else
-        echo "  VIFs found for VM $UUID:"
+        echo "📋 VIFs found for VM $UUID:"
         echo "$VIFS" | while IFS= read -r VIF_ID; do
-            echo "- $VIF_ID"
+            echo "      🌐 VIF: $VIF_ID"
             
             # Capture the txChecksumming status in a variable
             TX_CHECKSUMMING_STATUS=$(curl -s -k -X 'GET' \
@@ -143,10 +153,10 @@ else
             
             # Check if the status is 'true' before executing the xo-cli command
             if [ "$TX_CHECKSUMMING_STATUS" = "true" ]; then
-                echo "    txChecksumming is enabled. Disabling..."
+                echo "          🔧 txChecksumming is enabled. Disabling..."
                 xo-cli vif.set id=$VIF_ID txChecksumming=false
             else
-                echo "    txChecksumming is already disabled."
+                echo "          ✔️ txChecksumming is already disabled."
             fi
         done
     fi
