@@ -181,28 +181,18 @@ pipeline {
       }
     }
 
-stage('disable txChecksumming on opnsense vms') {
-  agent {
-    docker {
-      image 'rodrigorao/xo-cli:alpine'
-      // Use the entrypoint flag to disable the default entrypoint
-      args "--entrypoint='' -v ${PWD}:/scripts --env XO_URL=${XOA_URL} --env XO_TOKEN=${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true"
+    stage('Disable txChecksumming on OPNsense VMs') {
+        when {
+            expression {
+                params.CREATE_OR_DESTROY == "Create"
+            }
+        }
+        steps {
+            dir('cvsl/xo-cli') {
+                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
+            }
+        }
     }
-  }
-  steps {
-    dir('cvsl/xo-cli') {
-    sh '''
-      #cd /scripts
-      sh opnsense.sh
-    '''
-  }
-  }
-  when {
-    expression {
-      params.CREATE_OR_DESTROY == "Create"
-    }
-  }
-}
 
     stage('terraform destroy') {
       agent {
