@@ -90,96 +90,96 @@ pipeline {
       }
     }
 
-    stage('generate backend.hcl') {
-        agent {
-          docker {
-              image 'hairyhenderson/gomplate:alpine'
-              args "--entrypoint= -v ${PWD}:/work -w /work --env MINIO_ENDPOINT=${MINIO_ENDPOINT} --env MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY} --env MINIO_SECRET_KEY=${MINIO_SECRET_KEY}"
-          }
-        }
-        steps {
-          dir('cvsl/terraform') {
-            sh '''
-            /bin/gomplate -f backend.hcl.tpl -o backend.hcl -V
-            '''
-        }
-    }
-    }
+    // stage('generate backend.hcl') {
+    //     agent {
+    //       docker {
+    //           image 'hairyhenderson/gomplate:alpine'
+    //           args "--entrypoint= -v ${PWD}:/work -w /work --env MINIO_ENDPOINT=${MINIO_ENDPOINT} --env MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY} --env MINIO_SECRET_KEY=${MINIO_SECRET_KEY}"
+    //       }
+    //     }
+    //     steps {
+    //       dir('cvsl/terraform') {
+    //         sh '''
+    //         /bin/gomplate -f backend.hcl.tpl -o backend.hcl -V
+    //         '''
+    //     }
+    // }
+    // }
 
-    stage('terraform.tfvars') {
-        agent {
-          docker {
-              image 'hairyhenderson/gomplate:alpine'
-              args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
-              // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_TOKEN=${XOA_TOKEN}"
-          }
-        }
-        steps {
-          dir('cvsl/terraform') {
-            sh '''
-            /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
-            '''
-        }
-    }
-    }
+    // stage('terraform.tfvars') {
+    //     agent {
+    //       docker {
+    //           image 'hairyhenderson/gomplate:alpine'
+    //           args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
+    //           // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_TOKEN=${XOA_TOKEN}"
+    //       }
+    //     }
+    //     steps {
+    //       dir('cvsl/terraform') {
+    //         sh '''
+    //         /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
+    //         '''
+    //     }
+    // }
+    // }
 
-    stage('terraform init') {
-      agent {
-        docker {
-          image 'hashicorp/terraform:1.12.2'
-          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
-        }
-      }
-      steps {
-        dir('cvsl/terraform'){
-        sh '''
-          terraform init -no-color -migrate-state -backend-config=backend.hcl
-        '''
-        }
-      }
-    }
+    // stage('terraform init') {
+    //   agent {
+    //     docker {
+    //       image 'hashicorp/terraform:1.12.2'
+    //       args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+    //     }
+    //   }
+    //   steps {
+    //     dir('cvsl/terraform'){
+    //     sh '''
+    //       terraform init -no-color -migrate-state -backend-config=backend.hcl
+    //     '''
+    //     }
+    //   }
+    // }
   
-    stage('terraform plan') {
-      agent {
-        docker {
-          image 'hashicorp/terraform:1.12.2'
-          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
-        }
-      }
-      steps {
-        dir('cvsl/terraform'){
-              sh '''
-                terraform plan -no-color
-              '''
-        }
-      }
-      when {
-        expression {
-          params.CREATE_OR_DESTROY == "Create"
-        }
-      }
-    }
+    // stage('terraform plan') {
+    //   agent {
+    //     docker {
+    //       image 'hashicorp/terraform:1.12.2'
+    //       args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+    //     }
+    //   }
+    //   steps {
+    //     dir('cvsl/terraform'){
+    //           sh '''
+    //             terraform plan -no-color
+    //           '''
+    //     }
+    //   }
+    //   when {
+    //     expression {
+    //       params.CREATE_OR_DESTROY == "Create"
+    //     }
+    //   }
+    // }
 
-    stage('terraform apply') {
-      agent {
-        docker {
-          image 'hashicorp/terraform:1.12.2'
-          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
-        }
-      }
-      steps {
-        dir('cvsl/terraform'){
-        sh '''
-          terraform apply -no-color -auto-approve
-        '''
-        }
-      }
-      when {
-        expression {
-          params.CREATE_OR_DESTROY == "Create"
-        }
-      }
-    }
+    // stage('terraform apply') {
+    //   agent {
+    //     docker {
+    //       image 'hashicorp/terraform:1.12.2'
+    //       args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+    //     }
+    //   }
+    //   steps {
+    //     dir('cvsl/terraform'){
+    //     sh '''
+    //       terraform apply -no-color -auto-approve
+    //     '''
+    //     }
+    //   }
+    //   when {
+    //     expression {
+    //       params.CREATE_OR_DESTROY == "Create"
+    //     }
+    //   }
+    // }
 
     stage('Disable txChecksumming on OPNsense VMs') {
         when {
@@ -189,7 +189,7 @@ pipeline {
         }
         steps {
             dir('cvsl/xo-cli') {
-                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
+                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE="opnsense.sh" -v ${PWD}:/scripts rodrigorao/xo-cli:alpine"
             }
         }
     }
