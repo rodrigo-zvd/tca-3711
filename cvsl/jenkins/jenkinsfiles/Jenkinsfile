@@ -181,19 +181,18 @@ pipeline {
     //   }
     // }
 
-    stage('Disable txChecksumming on OPNsense VMs') {
-        when {
-            expression {
-                params.CREATE_OR_DESTROY == "Create"
-            }
-        }
-        steps {
-            dir('cvsl/xo-cli') {
-                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -e SCRIPT_FILE=opnsense.sh -v ${PWD}:/scripts rodrigorao/xo-cli:alpine"
-            }
-        }
-    }
-
+  stage('Disable txChecksumming on OPNsense VMs') {
+      when {
+          expression {
+              params.CREATE_OR_DESTROY == "Create"
+          }
+      }
+      steps {
+          dir('cvsl/xo-cli') {
+              sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
+          }
+      }
+  }
     stage('terraform destroy') {
       agent {
         docker {
