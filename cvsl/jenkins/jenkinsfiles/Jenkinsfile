@@ -92,37 +92,38 @@ pipeline {
       }
     }
 
-//     stage('generate backend.hcl') {
-//         agent {
-//           docker {
-//               image 'hairyhenderson/gomplate:alpine'
-//               args "--entrypoint= -v ${PWD}:/work -w /work --env MINIO_ENDPOINT=${MINIO_ENDPOINT} --env MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY} --env MINIO_SECRET_KEY=${MINIO_SECRET_KEY}"
-//           }
-//         }
-//         steps {
-//           dir('cvsl/terraform') {
-//             sh '''
-//             /bin/gomplate -f backend.hcl.tpl -o backend.hcl -V
-//             '''
-//         }
-//     }
-//     }
+    stage('generate backend.hcl') {
+        agent {
+          docker {
+              image 'hairyhenderson/gomplate:alpine'
+              args "--entrypoint= -v ${PWD}:/work -w /work --env MINIO_ENDPOINT=${MINIO_ENDPOINT} --env MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY} --env MINIO_SECRET_KEY=${MINIO_SECRET_KEY}"
+          }
+        }
+        steps {
+          dir('cvsl/terraform') {
+            sh '''
+            /bin/gomplate -f backend.hcl.tpl -o backend.hcl -V
+            '''
+        }
+    }
+    }
 
-//     stage('terraform.tfvars') {
-//         agent {
-//           docker {
-//               image 'hairyhenderson/gomplate:alpine'
-//               args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
-//           }
-//         }
-//         steps {
-//           dir('cvsl/terraform') {
-//             sh '''
-//             /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
-//             '''
-//         }
-//     }
-//     }
+    stage('terraform.tfvars') {
+        agent {
+          docker {
+              image 'hairyhenderson/gomplate:alpine'
+              // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
+              args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL_TF} --env --env XOA_TOKEN=${XOA_TOKEN}"
+          }
+        }
+        steps {
+          dir('cvsl/terraform') {
+            sh '''
+            /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
+            '''
+        }
+    }
+    }
 
 //     stage('terraform init') {
 //       agent {
