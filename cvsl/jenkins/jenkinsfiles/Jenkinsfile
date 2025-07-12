@@ -194,20 +194,22 @@ pipeline {
   //     }
   // }
 
-        stage('Disable txChecksumming on OPNsense VMs') {
-            when {
-                expression {
-                    params.CREATE_OR_DESTROY == "Create"
-                }
-            }
-            steps {
-                script {
-                    dir('cvsl/xo-cli') {
-                        sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
-                    }
-                }
+stage('Disable txChecksumming on OPNsense VMs') {
+    when {
+        expression {
+            params.CREATE_OR_DESTROY == "Create"
+        }
+    }
+    steps {
+        script {
+            dir('cvsl/xo-cli') {
+                // As variáveis de ambiente do Jenkins são passadas para o shell
+                // e expandidas corretamente no comando docker run
+                sh "docker run --rm -e XO_URL='${XOA_URL}' -e XO_TOKEN='${XOA_TOKEN}' -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh"
             }
         }
+    }
+}
 
     stage('terraform destroy') {
       agent {
