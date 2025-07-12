@@ -15,7 +15,6 @@ docker run --rm -it \
 rodrigorao/xo-cli:alpine "/scripts/opnsense.sh"
 
 docker run --rm -it \
---entrypoint /bin/sh \
 -e XO_URL="https://${XOA_IP}" \
 -e XO_TOKEN="uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc" \
 -e XO_ALLOW_UNAUTHORIZED=true \
