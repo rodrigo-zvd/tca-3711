@@ -194,23 +194,24 @@ pipeline {
   //     }
   // }
 
-stage('Disable txChecksumming on OPNsense VMs') {
-  agent {
-      docker {
-          image 'rodrigorao/xo-cli:alpine'
-          args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true"
+    stage('Disable txChecksumming on OPNsense VMs') {
+      agent {
+          docker {
+              image 'rodrigorao/xo-cli:alpine'
+              args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true"
+          }
       }
-  }
-  when {
-    expression { params.CREATE_OR_DESTROY == "Create" }
-  }
-  steps {
-    dir('cvsl/xo-cli') {
-      // Adicione '-x' para depuração
-      sh 'sh opnsense.sh'
+
+      steps {
+        dir('cvsl/xo-cli') {
+          // Adicione '-x' para depuração
+          sh 'sh opnsense.sh'
+        }
+      }
+      when {
+        expression { params.CREATE_OR_DESTROY == "Create" }
+      }
     }
-  }
-}
 
     stage('terraform destroy') {
       agent {

@@ -26,4 +26,4 @@ cd /var/jenkins_home/workspace/Build\ Lab\ CVSL/cvsl/xo-cli
 
 # Execute o comando com as variáveis de ambiente
 # (certifique-se de substituir os valores `xxxx` pelos corretos)
-docker run --rm -e XO_URL="https://192.168.1.40" -e XO_TOKEN="uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc" -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh -x /scripts/opnsense.sh
+docker run --rm -e XO_URL="https://192.168.1.40" -e XO_TOKEN="uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc" -e XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts rodrigorao/xo-cli:alpine sh /scripts/opnsense.sh
