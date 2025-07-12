@@ -198,7 +198,7 @@ pipeline {
       agent {
           docker {
               image 'rodrigorao/xo-cli:alpine'
-              args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts -w /scripts"
+              args "--entrypoint= --env XO_URL='https://192.168.1.40' --env XO_TOKEN='uF3Tzz01I4tEdPjb8vULOdKzXsq4hs3vS_mljZXx7Yc' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts --env XDG_CONFIG_HOME=/config"
           }
       }
 
