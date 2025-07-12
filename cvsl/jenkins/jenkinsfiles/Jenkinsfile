@@ -198,7 +198,7 @@ pipeline {
       agent {
           docker {
               image 'rodrigorao/xo-cli:alpine'
-              args "--entrypoint= --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true"
+              args "--entrypoint= --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts"
           }
       }
       when {
