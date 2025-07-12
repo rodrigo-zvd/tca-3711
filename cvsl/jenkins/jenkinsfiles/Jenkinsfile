@@ -140,26 +140,26 @@ pipeline {
       }
     }
   
-//     stage('terraform plan') {
-//       agent {
-//         docker {
-//           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
-//         }
-//       }
-//       steps {
-//         dir('cvsl/terraform'){
-//               sh '''
-//                 terraform plan -no-color
-//               '''
-//         }
-//       }
-//       when {
-//         expression {
-//           params.CREATE_OR_DESTROY == "Create"
-//         }
-//       }
-//     }
+    stage('terraform plan') {
+      agent {
+        docker {
+          image 'hashicorp/terraform:1.12.2'
+          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+        }
+      }
+      steps {
+        dir('cvsl/terraform'){
+              sh '''
+                terraform plan -no-color
+              '''
+        }
+      }
+      when {
+        expression {
+          params.CREATE_OR_DESTROY == "Create"
+        }
+      }
+    }
 
 //     stage('terraform apply') {
 //       agent {
