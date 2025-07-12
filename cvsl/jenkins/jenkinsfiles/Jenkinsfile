@@ -207,7 +207,7 @@ stage('Disable txChecksumming on OPNsense VMs') {
   steps {
     dir('cvsl/xo-cli') {
       // Adicione '-x' para depuração
-      sh 'sh -x opnsense.sh'
+      sh 'sh opnsense.sh'
     }
   }
 }
