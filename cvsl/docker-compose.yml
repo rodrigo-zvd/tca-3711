@@ -11,7 +11,7 @@ services:
       - DOCKER_TLS_VERIFY=1
       - XCP_MASTER_IP=${XCP_MASTER_IP}
       - XCP_USER=${XCP_USER}
-      - XCP_PASSWORD=${XCP_PASSWORD}
+      - XCP_PASSWORD=${XCP_PASSWORD}d
       - XOA_URL=${XOA_URL}
       - XOA_USER=${XOA_USER}
       - XOA_PASSWORD=${XOA_PASSWORD}
