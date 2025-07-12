@@ -112,7 +112,7 @@ pipeline {
         agent {
           docker {
               image 'hairyhenderson/gomplate:alpine'
-              args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL_TF} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
+              args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL_TF=${XOA_URL_TF} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
           }
         }
         steps {
