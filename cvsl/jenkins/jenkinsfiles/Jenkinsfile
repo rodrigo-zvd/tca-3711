@@ -106,22 +106,22 @@ pipeline {
     }
     }
 
-    // stage('terraform.tfvars') {
-    //     agent {
-    //       docker {
-    //           image 'hairyhenderson/gomplate:alpine'
-    //           args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
-    //           // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_TOKEN=${XOA_TOKEN}"
-    //       }
-    //     }
-    //     steps {
-    //       dir('cvsl/terraform') {
-    //         sh '''
-    //         /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
-    //         '''
-    //     }
-    // }
-    // }
+    stage('terraform.tfvars') {
+        agent {
+          docker {
+              image 'hairyhenderson/gomplate:alpine'
+              args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_USER=${XOA_USER} --env XOA_PASSWORD=${XOA_PASSWORD} --env XOA_TOKEN=${XOA_TOKEN}"
+              // args "--entrypoint= -v ${PWD}:/work -w /work --env XOA_URL=${XOA_URL} --env XOA_TOKEN=${XOA_TOKEN}"
+          }
+        }
+        steps {
+          dir('cvsl/terraform') {
+            sh '''
+            /bin/gomplate -f terraform.tfvars.tpl -o terraform.tfvars -V
+            '''
+        }
+    }
+    }
 
     // stage('terraform init') {
     //   agent {
@@ -193,21 +193,30 @@ pipeline {
   //         }
   //     }
   // }
-      stage('Disable txChecksumming on OPNsense VMs') {
-      agent {
+ stage('Disable txChecksumming on OPNsense VMs') {
+    agent {
         docker {
-          image 'rodrigorao/xo-cli:alpine'
-          args "--entrypoint='' --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN} --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}:/scripts"
+            image 'rodrigorao/xo-cli:alpine'
+            // Use --entrypoint='' para contornar o ENTRYPOINT problemático da imagem
+            // E passe cada argumento de forma individual na string
+            args "--entrypoint='' --env XO_URL='${XOA_URL}' --env XO_TOKEN='${XOA_TOKEN}' --env XO_ALLOW_UNAUTHORIZED=true -v ${PWD}/cvsl/xo-cli:/scripts"
         }
-      }
-      steps {
+    }
+    steps {
+        // O `dir` agora não é estritamente necessário, mas ajuda a garantir
+        // que o ${PWD} na linha `args` aponte para o lugar certo
         dir('cvsl/xo-cli') {
             sh '''
               /scripts/opnsense.sh
             '''
-            }
-      }
+        }
     }
+    when {
+        expression {
+            params.CREATE_OR_DESTROY == "Create"
+        }
+    }
+}
 
     stage('terraform destroy') {
       agent {
