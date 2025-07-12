@@ -72,7 +72,7 @@ pipeline {
             sshUserPrivateKey(credentialsId: 'jenkins-priv-key', keyFileVariable: 'JENKINS_PRIV_KEY'),
             ]) {
             sh '''
-              #cat "$JENKINS_PRIV_KEY" > id_ed25519
+              cat "$JENKINS_PRIV_KEY" > id_ed25519
               echo "$JENKINS_PUB_KEY" > id_ed25519.pub
             '''
             }
@@ -84,9 +84,9 @@ pipeline {
       steps {
         script {
           def minioIp = sh(script: "getent hosts minio | awk '{ print \$1 }'", returnStdout: true).trim()
-          env.MINIO_URL = minioIp
+          env.MINIO_IP = minioIp
           // def xoaIp = sh(script: "getent hosts xen-orchestra | awk '{ print \$1 }'", returnStdout: true).trim()
-          def xoaIp = sh(script: "echo ${XOA_URL_TF} | awk '{ print \$1 }'", returnStdout: true).trim()
+          def xoaIp = sh(script: "echo $XOA_URL_TF | awk -F'//' '{print \$2}'", returnStdout: true).trim()
           env.XOA_IP = xoaIp
         }
       }
