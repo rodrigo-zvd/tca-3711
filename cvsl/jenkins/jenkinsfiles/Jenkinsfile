@@ -182,7 +182,7 @@ pipeline {
       }
     }
 
-  stage('Disable txChecksumming on OPNsense VMs') {
+  stage('Disable tx checksumming on OPNsense VMs') {
       agent {
           docker {
               image 'rodrigorao/xo-cli:alpine'
