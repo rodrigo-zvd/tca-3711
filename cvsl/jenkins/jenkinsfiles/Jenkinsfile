@@ -128,7 +128,7 @@ pipeline {
       agent {
         docker {
           image 'hashicorp/terraform:1.12.2'
-          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+          args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
       steps {
@@ -144,7 +144,7 @@ pipeline {
       agent {
         docker {
           image 'hashicorp/terraform:1.12.2'
-          args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+          args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
         }
       }
       steps {
@@ -165,7 +165,7 @@ pipeline {
 //       agent {
 //         docker {
 //           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+//           args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
 //         }
 //       }
 //       steps {
@@ -204,7 +204,7 @@ pipeline {
 //       agent {
 //         docker {
 //           image 'hashicorp/terraform:1.12.2'
-//           args "--entrypoint= --add-host minio:${env.MINIO_URL} --add-host xen-orchestra:${env.XOA_IP}"
+//           args "--entrypoint= --add-host minio:${env.MINIO_IP} --add-host xen-orchestra:${env.XOA_IP}"
 //         }
 //       }
 //       steps {
